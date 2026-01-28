@@ -1,61 +1,73 @@
-import json
 import os
+import sys
 import joblib
 import pandas as pd
 import numpy as np
 import time
 from datetime import datetime
-# Import the exact feature engineering used during training
-from offline_sim.enhanced_features import create_enhanced_features
 
-# Path to the new high-performance Ensemble Model
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ENSEMBLE_MODEL_PATH = os.path.join(BASE_DIR, "..", "trained_ensemble_detector.pkl")
+# 1. Path Setup: Ensure the offline_sim directory is in the system path
+CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", ".."))
+OFFLINE_SIM_PATH = os.path.join(PROJECT_ROOT, "app", "offline_sim")
+
+if OFFLINE_SIM_PATH not in sys.path:
+    sys.path.insert(0, OFFLINE_SIM_PATH)
+
+# 2. Critical Namespace Fix: Import the class and alias it to __main__
+try:
+    import enhanced_features
+    from enhanced_features import EnsembleAnomalyDetector
+    
+    import __main__
+    setattr(__main__, 'EnsembleAnomalyDetector', EnsembleAnomalyDetector)
+except (ImportError, AttributeError) as e:
+    print(f"Namespace setup error: {e}")
+
+# 3. Model Path Configuration
+ENSEMBLE_MODEL_PATH = os.path.join(PROJECT_ROOT, "app", "trained_ensemble_detector.pkl")
 
 class FLComponent:
     def __init__(self, model_path: str = ENSEMBLE_MODEL_PATH):
-        """Initializes the FLComponent by loading the 94.2% accuracy Ensemble Detector."""
-        self.model_path = model_path
-        self.detector = self._load_model()
-        # Default ensemble threshold for anomaly detection
+        self.model_path = os.path.abspath(model_path)
         self.threshold = 0.5 
+        self.detector = self._load_model()
 
     def _load_model(self):
-        """Loads the trained EnsembleAnomalyDetector from the .pkl file."""
         if not os.path.exists(self.model_path):
-            raise FileNotFoundError(f"FATAL: Ensemble model not found at {self.model_path}")
+            raise FileNotFoundError(f"Model not found at {self.model_path}")
         
-        # Load the full detector object (includes scaler and ensemble weights)
-        detector = joblib.load(self.model_path)
-        print(f"Ensemble FL Model (AUC: 0.9517) loaded from {self.model_path}")
-        return detector
+        try:
+            # The global injection above allows joblib to find the class
+            detector = joblib.load(self.model_path)
+            print(f"Ensemble FL Model loaded successfully from {self.model_path}")
+            return detector
+        except Exception as e:
+            print(f"Error unpickling model: {e}")
+            return None
 
     def score_access(self, context: dict) -> float:
-        """
-        Scores an access request using the Ensemble Detector.
-        Returns a probability score (0.0 to 1.0) where > 0.5 is an anomaly.
-        """
+        """Scores an access request using the Ensemble Detector (AUC: 0.9517)."""
         try:
-            # 1. Enrich context for the ensemble feature engine
             current_dt = datetime.now()
-            context['hour'] = current_dt.hour
-            context['ts'] = time.time()
+            # Prepare data in the format expected by your feature engineering engine
+            data = {
+                'username': context.get('username', 'unknown'),
+                'location': context.get('location', 'unknown'),
+                'device': context.get('device', 'unknown'),
+                'department': context.get('department', 'unknown'),
+                'hour': current_dt.hour,
+                'ts': time.time(),
+                'client_id': context.get('username', 'unknown')
+            }
+            df = pd.DataFrame([data])
             
-            # Use username as client_id for behavioral matching
-            if "client_id" not in context:
-                context["client_id"] = context.get("username", "unknown")
-            
-            # 2. Convert to DataFrame and apply feature engineering
-            df = pd.DataFrame([context])
-            
-            # 3. Predict anomaly probability
-            # predict_proba returns the weighted consensus of RF, GBM, and SVM
-            anomaly_scores = self.detector.predict_proba(df)
-            score = float(anomaly_scores[0])
-            
-            print(f"Ensemble Inference: Score={score:.4f}")
-            return score
-            
+            if self.detector:
+                # The model combines RF, GBM, and LR for consensus scoring
+                score = float(self.detector.predict_proba(df)[0])
+                print(f"Inference: Probability={score:.4f}")
+                return score
+            return 0.0
         except Exception as e:
-            print(f"Ensemble FL Inference Error: {e}")
-            return 0.0 # Default to safe on error
+            print(f"Inference Error: {e}")
+            return 0.0

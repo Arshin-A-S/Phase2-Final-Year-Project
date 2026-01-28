@@ -4,12 +4,12 @@ import uuid
 import json
 from web3 import Web3
 
-from components.crypto_component import CryptoComponent
-from components.s3_component import S3Component
-from components.context_component import ContextComponent
-from components.fl_component import FLComponent
-from components.user_component import UserComponent
-from components.file_component import FileComponent
+from app.components.crypto_component import CryptoComponent
+from app.components.s3_component import S3Component
+from app.components.context_component import ContextComponent
+from app.components.fl_component import FLComponent
+from app.components.user_component import UserComponent
+from app.components.file_component import FileComponent
 
 app = Flask(__name__)
 
