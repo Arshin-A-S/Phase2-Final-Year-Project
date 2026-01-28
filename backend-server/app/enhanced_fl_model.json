@@ -1,0 +1,22 @@
+{
+  "version": 3,
+  "performance": {
+    "accuracy": 0.941544885177453,
+    "auc": 0.9517044685246574
+  },
+  "feature_cols": [
+    "hour_sin",
+    "hour_cos",
+    "is_weekend",
+    "is_night",
+    "is_business_hours",
+    "location_encoded",
+    "device_encoded",
+    "department_encoded",
+    "location_frequency",
+    "device_frequency",
+    "location_user_pattern",
+    "device_user_pattern",
+    "hour_user_pattern"
+  ]
+}
