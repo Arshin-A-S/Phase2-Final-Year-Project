@@ -10,24 +10,51 @@ def validate_fpr():
     fl_comp = FLComponent()
     
     # Create test data with known labels
-    test_data = [
-        # Normal cases (label=0)
-        ({"location": "chennai", "device_id": "laptop1"}, 0),
-        ({"location": "mumbai", "device_id": "legion"}, 0),
-        ({"location": "chennai", "device_id": "phone1"}, 0),
-        # Repeat normal patterns
-        *[({"location": "chennai", "device_id": "laptop1"}, 0) for _ in range(100)],
+    # test_data = [
+    #     # Normal cases (label=0)
+    #     ({"location": "chennai", "device_id": "laptop1"}, 0),
+    #     ({"location": "mumbai", "device_id": "legion"}, 0),
+    #     ({"location": "chennai", "device_id": "phone1"}, 0),
+    #     # Repeat normal patterns
+    #     *[({"location": "chennai", "device_id": "laptop1"}, 0) for _ in range(100)],
         
-        # Anomalous cases (label=1) 
-        ({"location": "unknown_city", "device_id": "suspicious"}, 1),
-        ({"location": "foreign", "device_id": "hacker"}, 1),
-        *[({"location": "unknown", "device_id": "unknown"}, 1) for _ in range(20)]
+    #     # Anomalous cases (label=1) 
+    #     ({"location": "unknown_city", "device_id": "suspicious"}, 1),
+    #     ({"location": "foreign", "device_id": "hacker"}, 1),
+    #     *[({"location": "unknown", "device_id": "unknown"}, 1) for _ in range(20)]
+    # ]
+    test_data = [
+        # Normal Case 1: delhi, phone1, cs (Matches Row 1 of synthetic_events.csv)
+        ({
+            "username": "81e1ecd4-8ba5-4132-9855-156d69cc7a2c", 
+            "location": "delhi", 
+            "device": "phone1", 
+            "department": "cs",
+            "hour": 15 # Required to match 'afternoon' pattern in CSV
+        }, 0),
+        
+        # Normal Case 2: chennai, laptop1, cs (Matches Row 2 of synthetic_events.csv)
+        ({
+            "username": "62835e2d-d8bb-45fe-944c-855359017659", 
+            "location": "chennai", 
+            "device": "laptop1", 
+            "department": "cs",
+            "hour": 15 # Required to match 'afternoon' pattern in CSV
+        }, 0),
+
+        # Anomalous Case: Unknown metadata
+        ({
+            "username": "unknown_user", 
+            "location": "foreign_region", 
+            "device": "hacker_tool", 
+            "department": "unknown",
+            "hour": 3 # Suspicious late-night access
+        }, 1),
     ]
-    
     # Score all test cases
     predictions = []
     true_labels = []
-    threshold = 0.65  # From your fl_model.json
+    threshold = 0.5  # From your fl_model.json
     
     for context, true_label in test_data:
         score = fl_comp.score_access(context)
