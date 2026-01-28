@@ -2,7 +2,7 @@
   "version": 3,
   "performance": {
     "accuracy": 0.9417536534446764,
-    "auc": 0.9516221823311801
+    "auc": 0.9516288211323523
   },
   "feature_cols": [
     "hour_sin",
