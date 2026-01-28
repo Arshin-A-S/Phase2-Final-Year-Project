@@ -6,37 +6,32 @@ import numpy as np
 import time
 from datetime import datetime
 
-# 1. Robust Path Resolution
-BASE_DIR = os.path.dirname(os.path.abspath(__file__)) # app/components
-PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', '..')) # backend-server
+# 1. Path Resolution
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
 
-# Ensure the root is in sys.path so 'app.offline_sim' is resolvable
+# Add root to path so 'app' is a valid package
 if PROJECT_ROOT not in sys.path:
     sys.path.insert(0, PROJECT_ROOT)
 
-# 2. Absolute Namespace Binding (Critical Mac Fix)
+# 2. Namespace Binding (The macOS Fix)
 try:
-    # Use absolute import to avoid "no known parent package" error
+    # Absolute import from the package
     from app.offline_sim.enhanced_features import EnsembleAnomalyDetector
     
+    # CRITICAL: Tell Python to look in __main__ for this class
+    # joblib defaults to looking in the execution script's namespace
     import __main__
-    import app.server
+    __main__.EnsembleAnomalyDetector = EnsembleAnomalyDetector
     
-    # Inject the class into every namespace joblib might search
-    setattr(__main__, 'EnsembleAnomalyDetector', EnsembleAnomalyDetector)
-    setattr(app.server, 'EnsembleAnomalyDetector', EnsembleAnomalyDetector)
+    # Register in sys.modules to satisfy secondary lookups
+    sys.modules['EnsembleAnomalyDetector'] = EnsembleAnomalyDetector
     
-    # Also register the simulation module path to be safe
-    if 'app.offline_sim.enhanced_features' in sys.modules:
-        setattr(sys.modules['app.offline_sim.enhanced_features'], 'EnsembleAnomalyDetector', EnsembleAnomalyDetector)
-        
     print("Intelligence Layer: Namespace binding successful.")
 except ImportError as e:
     print(f"Intelligence Layer Binding Error: {e}")
-    # Fallback definition if import fails
-    class EnsembleAnomalyDetector: pass
 
-# 3. Model Path Configuration
+# 3. Model Configuration
 ENSEMBLE_MODEL_PATH = os.path.join(PROJECT_ROOT, "app", "trained_ensemble_detector.pkl")
 
 class FLComponent:
@@ -46,24 +41,21 @@ class FLComponent:
         self.detector = self._load_model()
 
     def _load_model(self):
-        """Loads the Ensemble Intelligence Layer (94.2% Accuracy)."""
         if not os.path.exists(self.model_path):
             raise FileNotFoundError(f"Model not found at {self.model_path}")
         
         try:
-            # The unpickler uses the class we injected in Step 2
+            # The unpickler will now find the class in Step 2
             detector = joblib.load(self.model_path)
-            print(f"Ensemble FL Model loaded from {self.model_path}")
+            print(f"Ensemble FL Model loaded successfully from {self.model_path}")
             return detector
         except Exception as e:
             print(f"Fatal Error: Intelligence Layer could not be unpickled: {e}")
             return None
 
     def score_access(self, context: dict) -> float:
-        """Scores an access request using the Ensemble engine."""
         try:
             current_dt = datetime.now()
-            # Feature extraction for Ensemble inference
             data = {
                 'username': context.get('username', 'unknown'),
                 'location': context.get('location', 'unknown'),

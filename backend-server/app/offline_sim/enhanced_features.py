@@ -8,7 +8,6 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier,
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import OneClassSVM
 from sklearn.preprocessing import StandardScaler
-from .enhanced_features import create_enhanced_features
 
 def create_enhanced_features(df: pd.DataFrame) -> pd.DataFrame:
     """Create enhanced features for better anomaly detection"""
