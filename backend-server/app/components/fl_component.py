@@ -2,27 +2,24 @@ import os
 import sys
 import joblib
 import pandas as pd
-import numpy as np
-import time
 from datetime import datetime
+import time
 
-# 1. Path Setup: Ensure the offline_sim directory is in the system path
-CURRENT_DIR = os.path.dirname(os.path.abspath(__file__))
-PROJECT_ROOT = os.path.abspath(os.path.join(CURRENT_DIR, "..", ".."))
-OFFLINE_SIM_PATH = os.path.join(PROJECT_ROOT, "app", "offline_sim")
+# Robust Path Resolution
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_ROOT = os.path.abspath(os.path.join(BASE_DIR, '..', '..'))
+OFFLINE_SIM_PATH = os.path.join(PROJECT_ROOT, 'app', 'offline_sim')
 
 if OFFLINE_SIM_PATH not in sys.path:
     sys.path.insert(0, OFFLINE_SIM_PATH)
 
-# 2. Critical Namespace Fix: Import the class and alias it to __main__
 try:
     import enhanced_features
-    from enhanced_features import EnsembleAnomalyDetector
-    
+    # Tell Python where to find the class during unpickling
     import __main__
-    setattr(__main__, 'EnsembleAnomalyDetector', EnsembleAnomalyDetector)
-except (ImportError, AttributeError) as e:
-    print(f"Namespace setup error: {e}")
+    __main__.EnsembleAnomalyDetector = enhanced_features.EnsembleAnomalyDetector
+except Exception as e:
+    print(f"Binding Error: {e}")
 
 # 3. Model Path Configuration
 ENSEMBLE_MODEL_PATH = os.path.join(PROJECT_ROOT, "app", "trained_ensemble_detector.pkl")
