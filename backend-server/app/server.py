@@ -78,13 +78,16 @@ def log_to_blockchain(username, file_id, action, granted, reason):
 @app.route("/register", methods=["POST"])
 def register():
     try:
-        j = request.json
-        username = j.get("username")
-        attrs = j.get("attributes", [])
-        location = j.get("location", "")
-        department = j.get("department", "")
+        data = request.get_json()
+        if not data:
+            return jsonify({"success": False, "error": "No input data provided"}), 400
 
-        print(f"Registering user: {username}...") # Debug log
+        username = data.get("username")
+        attrs = data.get("attributes", [])
+        location = data.get("location", "")
+        department = data.get("department", "")
+
+        print(f"--- Processing Registration for {username} ---")
 
         ok, res = user_comp.register_user(username, attrs, location, department)
         if not ok:
@@ -93,18 +96,20 @@ def register():
         # Waters11 CP-ABE Setup
         try:
             crypto.load_master_keys()
-        except Exception as e:
-            print(f"Master keys not found or invalid ({e}), generating new ones...")
+        except Exception:
+            print("Master keys missing, initializing...")
             crypto.setup(force=True)
             crypto.save_master_keys()
 
+        # Generate Key
         abe_sk_b64 = crypto.generate_user_secret(attrs)
         user_comp.set_user_abe_sk(username, abe_sk_b64)
 
-        return jsonify({"success": True, "user": res, "abe_sk": abe_sk_b64})
+        return jsonify({"success": True, "message": "User registered", "user": res})
 
     except Exception as e:
-        print(f"CRITICAL REGISTRATION ERROR: {e}")
+        # This prevents the CLI JSONDecodeError by returning a JSON error instead of an HTML 500 page
+        print(f"CRITICAL ERROR: {str(e)}")
         import traceback
         traceback.print_exc()
         return jsonify({"success": False, "error": str(e)}), 500

@@ -4,7 +4,8 @@ import os
 import uuid
 from datetime import datetime
 
-DB_PATH = "db.json"
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DB_PATH = os.path.join(BASE_DIR, "db.json")
 
 def load_db():
     if not os.path.exists(DB_PATH):
@@ -21,15 +22,16 @@ class UserComponent:
     def __init__(self):
         self.db = load_db()
 
-    def register_user(self, username, attrs, location, department): # Added department
+    def register_user(self, username, attrs, location, department): # Add department here
         if username in self.db["users"]:
             return False, "User exists"
+        
         uid = str(uuid.uuid4())
         self.db["users"][username] = {
             "id": uid,
             "attributes": attrs,
             "location": location,
-            "department": department, # Added department
+            "department": department, # Add this line to store it
             "created": datetime.utcnow().isoformat(),
             "abe_sk": None,
         }
