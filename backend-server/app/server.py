@@ -77,31 +77,37 @@ def log_to_blockchain(username, file_id, action, granted, reason):
 # ---------------- Register ----------------
 @app.route("/register", methods=["POST"])
 def register():
-    j = request.json
-    username = j.get("username")
-    attrs = j.get("attributes", [])
-    location = j.get("location", "")
-    department = j.get("department", "")
-
-    ok, res = user_comp.register_user(username, attrs, location, department)
-    if not ok:
-        return jsonify({"success": False, "error": res}), 400
-
-    # generate Waters11 CP-ABE SK for user
     try:
-        crypto.load_master_keys()  # load PK/MSK
-    except FileNotFoundError:
-        crypto.setup(force=True)
-        crypto.save_master_keys()
+        j = request.json
+        username = j.get("username")
+        attrs = j.get("attributes", [])
+        location = j.get("location", "")
+        department = j.get("department", "")
 
-    try:
+        print(f"Registering user: {username}...") # Debug log
+
+        ok, res = user_comp.register_user(username, attrs, location, department)
+        if not ok:
+            return jsonify({"success": False, "error": res}), 400
+
+        # Waters11 CP-ABE Setup
+        try:
+            crypto.load_master_keys()
+        except Exception as e:
+            print(f"Master keys not found or invalid ({e}), generating new ones...")
+            crypto.setup(force=True)
+            crypto.save_master_keys()
+
         abe_sk_b64 = crypto.generate_user_secret(attrs)
         user_comp.set_user_abe_sk(username, abe_sk_b64)
-    except Exception as e:
-        print("Warning: unable to generate Waters11 ABE SK:", e)
-        abe_sk_b64 = None
 
-    return jsonify({"success": True, "user": res, "abe_sk": abe_sk_b64})
+        return jsonify({"success": True, "user": res, "abe_sk": abe_sk_b64})
+
+    except Exception as e:
+        print(f"CRITICAL REGISTRATION ERROR: {e}")
+        import traceback
+        traceback.print_exc()
+        return jsonify({"success": False, "error": str(e)}), 500
 
 # ---------------- Login (for CLI compat) ----------------
 @app.route("/login", methods=["POST"])
