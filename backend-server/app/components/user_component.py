@@ -21,17 +21,16 @@ class UserComponent:
     def __init__(self):
         self.db = load_db()
 
-    def register_user(self, username, attrs, location):
+    def register_user(self, username, attrs, location, department): # Added department
         if username in self.db["users"]:
             return False, "User exists"
-        # Each user will have an id and will store attributes and (placeholder) abe private key
         uid = str(uuid.uuid4())
         self.db["users"][username] = {
             "id": uid,
             "attributes": attrs,
             "location": location,
+            "department": department, # Added department
             "created": datetime.utcnow().isoformat(),
-            # user SK must be created via CryptoComponent generate_user_key; placeholder
             "abe_sk": None,
         }
         save_db(self.db)

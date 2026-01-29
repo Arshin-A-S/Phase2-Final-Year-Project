@@ -81,8 +81,9 @@ def register():
     username = j.get("username")
     attrs = j.get("attributes", [])
     location = j.get("location", "")
+    department = j.get("department", "")
 
-    ok, res = user_comp.register_user(username, attrs, location)
+    ok, res = user_comp.register_user(username, attrs, location, department)
     if not ok:
         return jsonify({"success": False, "error": res}), 400
 
