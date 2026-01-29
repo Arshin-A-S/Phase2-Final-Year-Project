@@ -5,7 +5,7 @@ from client.file_client import FileClient
 import os, datetime
 
 class CLIApp:
-    def __init__(self, base_url="http://127.0.0.1:5000"):
+    def __init__(self, base_url="http://127.0.0.1:5001"):
         api = APIClient(base_url)
         self.user_cli = UserClient(api)
         self.file_cli = FileClient(api)
