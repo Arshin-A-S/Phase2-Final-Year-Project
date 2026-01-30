@@ -106,6 +106,11 @@ def register():
         abe_sk_b64 = crypto.generate_user_secret(attrs)
         user_comp.set_user_abe_sk(username, abe_sk_b64)
 
+        try:
+            log_to_blockchain(username, "N/A", "REGISTER_USER", True, f"Sttrs: {','.join(attrs)}")
+        except Exception as be:
+            print(f"Blockchain logging failed but user was registered: {be}")
+        
         return jsonify({"success": True, "message": "User registered", "user": res})
 
     except Exception as e:
