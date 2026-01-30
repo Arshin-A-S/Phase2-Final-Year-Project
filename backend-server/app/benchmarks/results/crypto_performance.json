@@ -1,0 +1,48 @@
+{
+    "layer": "Cryptography",
+    "abe_keygen_ms": 66.08,
+    "file_latencies": [
+        {
+            "size_mb": 1,
+            "abe_enc_ms": 21.85,
+            "abe_dec_ms": 11.96,
+            "pqc_wrap_ms": 1.42,
+            "pqc_status": "simulated"
+        },
+        {
+            "size_mb": 5,
+            "abe_enc_ms": 34.58,
+            "abe_dec_ms": 32.97,
+            "pqc_wrap_ms": 1.42,
+            "pqc_status": "simulated"
+        },
+        {
+            "size_mb": 10,
+            "abe_enc_ms": 59.87,
+            "abe_dec_ms": 62.39,
+            "pqc_wrap_ms": 1.42,
+            "pqc_status": "simulated"
+        },
+        {
+            "size_mb": 25,
+            "abe_enc_ms": 140.64,
+            "abe_dec_ms": 142.46,
+            "pqc_wrap_ms": 1.42,
+            "pqc_status": "simulated"
+        },
+        {
+            "size_mb": 50,
+            "abe_enc_ms": 284.35,
+            "abe_dec_ms": 272.18,
+            "pqc_wrap_ms": 1.42,
+            "pqc_status": "simulated"
+        },
+        {
+            "size_mb": 100,
+            "abe_enc_ms": 548.76,
+            "abe_dec_ms": 545.22,
+            "pqc_wrap_ms": 1.42,
+            "pqc_status": "simulated"
+        }
+    ]
+}

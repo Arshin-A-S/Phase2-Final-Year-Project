@@ -57,8 +57,9 @@ contract = w3.eth.contract(address=CONTRACT_ADDRESS, abi=CONTRACT_ABI)
 # Using the first default account from Anvil
 PRIVATE_KEY = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 ACCOUNT_ADDRESS = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
+
 def log_to_blockchain(username, file_id, action, granted, reason):
-    """Sends an access audit log to the Ethereum Smart Contract."""
+    """Sends an access audit log to the Ethereum Smart Contract and returns gas used."""
     try:
         nonce = w3.eth.get_transaction_count(ACCOUNT_ADDRESS)
         tx = contract.functions.logAccess(
@@ -71,10 +72,16 @@ def log_to_blockchain(username, file_id, action, granted, reason):
         })
         signed_tx = w3.eth.account.sign_transaction(tx, PRIVATE_KEY)
         tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
-        print(f"Blockchain Audit Logged: {file_id} for {username} (TX: {w3.to_hex(tx_hash)})")
+        
+        # --- NEW: Capture receipt to get gas metrics ---
+        receipt = w3.eth.wait_for_transaction_receipt(tx_hash)
+        gas_used = receipt.get('gasUsed', 0)
+        
+        print(f"Blockchain Audit Logged: {file_id} for {username} (TX: {w3.to_hex(tx_hash)}) | Gas: {gas_used}")
+        return gas_used  # Returning this allows your benchmark script to save it
     except Exception as e:
         print(f"Blockchain logging failed: {e}")
-
+        return 0
 # ---------------- Register ----------------
 @app.route("/register", methods=["POST"])
 def register():
