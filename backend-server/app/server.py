@@ -248,6 +248,7 @@ def download():
         return jsonify({"success": False, "error": "context policy denied"}), 403
 
     # FL anomaly check
+    # FL anomaly check
     score = fl_comp.score_access(context)
     # Use the trained threshold from the new model
     if "decision" in fl_comp.model and "threshold" in fl_comp.model["decision"]:
