@@ -4,11 +4,16 @@ import os
 import sys
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 
+# Get project root
+current_dir = os.path.dirname(os.path.abspath(__file__))
+project_root = os.path.dirname(os.path.dirname(current_dir))
+
 def validate_intelligence():
     print("=== Intelligence Pillar: Ensemble FL Accuracy ===")
     
-    model_path = "../trained_ensemble_detector.pkl"
-    data_path = "../../data/synthetic_events.csv"
+    # Use absolute paths derived from project root
+    model_path = os.path.join(project_root, "app", "trained_ensemble_detector.pkl")
+    data_path = os.path.join(project_root, "data", "synthetic_events.csv")
     
     if not os.path.exists(model_path):
         print(f"Error: Model not found at {model_path}")

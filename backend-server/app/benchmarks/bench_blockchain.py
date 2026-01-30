@@ -3,7 +3,14 @@ import os
 import sys
 
 # Ensure the app directory is in the path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# 1. Get absolute path of benchmarks folder
+current_dir = os.path.dirname(os.path.abspath(__file__))
+# 2. Get path to backend-server (benchmarks -> app -> backend-server)
+project_root = os.path.dirname(os.path.dirname(current_dir))
+
+if project_root not in sys.path:
+    sys.path.insert(0, project_root)
+
 from app.server import log_to_blockchain
 
 def benchmark_blockchain():
