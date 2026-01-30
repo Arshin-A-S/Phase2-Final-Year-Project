@@ -70,7 +70,7 @@ def log_to_blockchain(username, file_id, action, granted, reason):
             'gasPrice': w3.to_wei('20', 'gwei')
         })
         signed_tx = w3.eth.account.sign_transaction(tx, PRIVATE_KEY)
-        tx_hash = w3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = w3.eth.send_raw_transaction(signed_tx.raw_transaction)
         print(f"Blockchain Audit Logged: {file_id} for {username} (TX: {w3.to_hex(tx_hash)})")
     except Exception as e:
         print(f"Blockchain logging failed: {e}")
