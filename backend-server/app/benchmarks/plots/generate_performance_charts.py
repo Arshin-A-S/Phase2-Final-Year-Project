@@ -21,32 +21,30 @@ def generate_blockchain_plots():
     
     df = pd.DataFrame(data['runs'])
     
-    # Plot 1: Gas Consumption vs Payload Size (Remains the same)
+    # Plot 1: Gas Consumption vs Payload Size
     plt.figure(figsize=(10, 6))
-    sns.lineplot(data=df, x='payload_bytes', y='gas_used', marker='o', linewidth=2.5, color='#2c3e50')
+    
+    # Customizing markers for maximum visibility
+    sns.lineplot(
+        data=df, 
+        x='payload_bytes', 
+        y='gas_used', 
+        marker='o',          # Circular marker
+        markersize=12,       # Increased size for visibility
+        markerfacecolor='red',# Contrasting color for the marker interior
+        markeredgecolor='black', # Adding an edge for better definition
+        linewidth=2.5, 
+        color='#2c3e50'
+    )
+    
     plt.title('Blockchain Audit Overhead: Gas vs Metadata Size')
     plt.xlabel('Payload Metadata (Bytes)')
     plt.ylabel('Gas Consumption')
     plt.tight_layout()
     plt.savefig(os.path.join(OUTPUT_DIR, "blockchain_gas_vs_size.png"), dpi=300)
     plt.close()
-
-    # Plot 2: UPDATED Latency Chart using Payload Bytes as X-axis
-    plt.figure(figsize=(10, 6))
-    # Convert payload_bytes to string to treat them as discrete categories for the bar plot
-    df['payload_label'] = df['payload_bytes'].astype(str) + " B"
     
-    sns.barplot(data=df, x='payload_label', y='latency_ms', palette='viridis')
-    plt.axhline(data['average_latency_ms'], ls='--', color='red', label=f"Avg: {data['average_latency_ms']}ms")
-    
-    plt.title('Blockchain Audit Latency vs. Metadata Size')
-    plt.xlabel('Actual Payload Size (Bytes)')
-    plt.ylabel('Latency (ms)')
-    plt.legend()
-    plt.tight_layout()
-    plt.savefig(os.path.join(OUTPUT_DIR, "blockchain_latency.png"), dpi=300)
-    plt.close()
-
+   
 def generate_crypto_plots():
     print("[+] Generating Cryptography Charts...")
     with open(os.path.join(RESULTS_DIR, "crypto_performance.json"), "r") as f:

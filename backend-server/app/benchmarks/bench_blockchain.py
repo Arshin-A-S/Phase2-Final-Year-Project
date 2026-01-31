@@ -12,8 +12,7 @@ if project_root not in sys.path:
 from app.server import log_to_blockchain
 
 def benchmark_blockchain():
-    print("=== Blockchain Auditing Pillar Performance ===")
-    print("[!] Ensure Anvil is running and server.py returns gas used.")
+    print("=== Blockchain Auditing Pillar Performance (6 Scenario Evaluation) ===")
     
     perf_data = {
         "layer": "Blockchain", 
@@ -23,26 +22,26 @@ def benchmark_blockchain():
         "runs": []
     }
 
-    # Drastically varied scenarios to induce big gas variations for graphs
+    # Reverted to 6 scenarios for focused performance scaling
     test_scenarios = [
-        {"user": "alice", "reason": "Normal"},                                     # ~11 bytes
-        {"user": "user_med", "reason": "Standard_Access_Audit_Log_" * 5},          # ~130 bytes
-        {"user": "user_large", "reason": "Authorized_Research_Data_Access_" * 15}, # ~450 bytes
-        {"user": "auditor_xl", "reason": "Security_Context_Shield_Validation_" * 30}, # ~900 bytes
-        {"user": "admin_max", "reason": "Emergency_Override_Full_Audit_Trail_Report_" * 45} # ~2000+ bytes
+        {"user": "alice", "reason": "Normal"},                                     # ~28 bytes
+        {"user": "user_med", "reason": "Standard_Access_Audit_Log_" * 5},          # ~155 bytes
+        {"user": "user_large", "reason": "Authorized_Research_Data_Access_" * 15}, # ~507 bytes
+        {"user": "auditor_xl", "reason": "Security_Context_Shield_Validation_" * 30}, # ~1077 bytes
+        {"user": "admin_max", "reason": "Emergency_Override_Full_Audit_Trail_Report_" * 45}, # ~1961 bytes
+        {"user": "res_xxl", "reason": "Context_Validation_Detailed_Audit_Stream_Log_" * 44}  # ~2200 bytes
     ]
 
     latencies = []
     gas_values = []
 
     for i, scenario in enumerate(test_scenarios):
-        # Calculate approximate bytes being sent in the string fields
-        # This is what you will use for your X-axis in the graph
+        # Calculate approximate bytes: sum of strings + standard overhead
         payload_bytes = len(scenario["user"]) + len(scenario["reason"]) + len(f"file_id_{i}") + len("DOWNLOAD")
         
         start = time.time()
         
-        # Call server.py function which now returns the gasUsed from the receipt
+        # Log to the smart contract (AccessLog.sol)
         gas = log_to_blockchain(
             scenario["user"], 
             f"file_id_{i}", 
@@ -58,7 +57,7 @@ def benchmark_blockchain():
         
         perf_data["runs"].append({
             "scenario_index": i + 1,
-            "payload_bytes": payload_bytes, # Added explicitly for your JSON
+            "payload_bytes": payload_bytes,
             "latency_ms": round(latency, 2),
             "gas_used": gas
         })
@@ -73,13 +72,14 @@ def benchmark_blockchain():
     # Save to file
     output_dir = os.path.join(current_dir, "results")
     os.makedirs(output_dir, exist_ok=True)
-    with open(os.path.join(output_dir, "blockchain_performance.json"), "w") as f:
+    results_path = os.path.join(output_dir, "blockchain_performance.json")
+    with open(results_path, "w") as f:
         json.dump(perf_data, f, indent=4)
     
     print("-" * 40)
     print(f"Average Audit Latency: {perf_data['average_latency_ms']} ms")
     print(f"Average Gas Cost: {perf_data['average_gas_per_tx']}")
-    print(f"[!] Variation Data saved to {output_dir}/blockchain_performance.json")
+    print(f"[!] Results saved to {results_path}")
 
 if __name__ == "__main__":
     benchmark_blockchain()
