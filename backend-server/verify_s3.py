@@ -15,7 +15,7 @@ def verify_s3_connection():
     # Check if env variables are loaded
     access_key = os.getenv("AWS_ACCESS_KEY_ID")
     if not access_key:
-        print("❌ Error: AWS_ACCESS_KEY_ID not found in .env file.")
+        print("Error: AWS_ACCESS_KEY_ID not found in .env file.")
         return
 
     try:
