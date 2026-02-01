@@ -9,19 +9,16 @@ project_root = os.path.dirname(os.path.dirname(current_dir))
 if project_root not in sys.path:
     sys.path.insert(0, project_root)
 
-# Check your crypto_component.py for the exact class name (usually HybridABE)
-try:
-    from app.components.crypto_component import HybridABE as CryptoClass
-except ImportError:
-    # Fallback if the name is different; check your file!
-    from app.components.crypto_component import HybridCrypto as CryptoClass
-
+# Import the correct class name from crypto_component.py
+from app.components.crypto_component import CryptoComponent
 from app.components.s3_component import S3Component
 
 def run_integration_benchmark():
     print("=== AWS S3 Integration & Latency Bottleneck Test ===")
     
-    crypto = CryptoClass()
+    # Initialize components
+    crypto = CryptoComponent()
+    crypto.load_master_keys() # Ensure keys are loaded
     s3 = S3Component()
     
     # Test File Sizes (1MB, 10MB, 50MB)
@@ -38,12 +35,16 @@ def run_integration_benchmark():
 
         # 2. Local Security Latency (M5 Processing)
         start_sec = time.time()
-        # Encrypt using your CP-ABE + AES logic
-        enc_data, metadata = crypto.encrypt_file(test_file_path, "dept:research")
+        # Use the correct method name: encrypt_file_hybrid
+        # Note: Waters11 normalization in your file expects 'role:admin' or 'dept:cs' etc.
+        meta = crypto.encrypt_file_hybrid(test_file_path, "role:admin")
         security_latency = (time.time() - start_sec) * 1000
 
         # 3. Cloud Network Latency (S3 Upload)
         start_cloud = time.time()
+        with open(meta["enc_file_path"], "rb") as f:
+            enc_data = f.read()
+            
         s3_key = f"perf_test_{size}mb.enc"
         s3.upload_file(enc_data, s3_key)
         network_latency = (time.time() - start_cloud) * 1000
@@ -59,6 +60,10 @@ def run_integration_benchmark():
 
         print(f"    - M5 Security: {security_latency:.2f} ms")
         print(f"    - S3 Network:  {network_latency:.2f} ms")
+        
+        # Cleanup local encrypted file after upload
+        if os.path.exists(meta["enc_file_path"]):
+            os.remove(meta["enc_file_path"])
 
     # Save to JSON
     out_dir = os.path.join(current_dir, "results")
