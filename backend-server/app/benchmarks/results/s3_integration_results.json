@@ -1,0 +1,23 @@
+[
+    {
+        "size_mb": 1,
+        "security_overhead_ms": 22.74,
+        "network_latency_ms": 2846.46,
+        "total_ms": 2869.2,
+        "security_share_pct": 0.79
+    },
+    {
+        "size_mb": 10,
+        "security_overhead_ms": 65.56,
+        "network_latency_ms": 4683.75,
+        "total_ms": 4749.31,
+        "security_share_pct": 1.38
+    },
+    {
+        "size_mb": 50,
+        "security_overhead_ms": 285.04,
+        "network_latency_ms": 23872.6,
+        "total_ms": 24157.64,
+        "security_share_pct": 1.18
+    }
+]
