@@ -1,13 +1,20 @@
 import { useEffect, useState } from "react";
-import { Search, Upload, Trash2 } from "lucide-react";
+import { Search, Upload, Trash2, Download } from "lucide-react";
 
 export default function DataCatalog() {
   const [files, setFiles] = useState([]);
   const [search, setSearch] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
   const [policy, setPolicy] = useState("");
-  const [username] = useState("Alice");
 
+  // 🔥 Context (like CLI)
+  const [location, setLocation] = useState("");
+  const [device, setDevice] = useState("");
+  const [department, setDepartment] = useState("");
+
+  const [username] = useState("alice");
+
+  // Fetch files
   const fetchFiles = () => {
     fetch("http://localhost:5001/files")
       .then((res) => res.json())
@@ -41,6 +48,8 @@ export default function DataCatalog() {
 
       if (data.success) {
         alert("Uploaded 🚀");
+        setSelectedFile(null);
+        setPolicy("");
         fetchFiles();
       } else {
         alert(data.error);
@@ -52,7 +61,7 @@ export default function DataCatalog() {
 
   // 🔥 Delete
   const handleDelete = async (fileId) => {
-    if (!confirm("Delete this file?")) return;
+    if (!window.confirm("Delete this file?")) return;
 
     try {
       const res = await fetch("http://localhost:5001/delete", {
@@ -75,6 +84,48 @@ export default function DataCatalog() {
     }
   };
 
+  // 🔥 Download (with context like CLI)
+  const handleDownload = async (fileId, fileName) => {
+    if (!location || !device || !department) {
+      alert("Enter location, device, and department");
+      return;
+    }
+
+    try {
+      const res = await fetch("http://localhost:5001/download", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+          file_id: fileId,
+          context: {
+            location: location,
+            device: device,
+            department: department,
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        alert(err.error);
+        return;
+      }
+
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.click();
+    } catch {
+      alert("Download failed");
+    }
+  };
+
   const filtered = files.filter((f) =>
     f.name.toLowerCase().includes(search.toLowerCase())
   );
@@ -83,13 +134,13 @@ export default function DataCatalog() {
     <div>
       <h1 className="text-3xl font-semibold mb-6">Data Catalog</h1>
 
-      {/* 🔥 Upload Section */}
+      {/* 🔥 Upload */}
       <div className="bg-white dark:bg-gray-900 p-4 rounded-xl border mb-6 flex gap-4 items-center">
         <input type="file" onChange={(e) => setSelectedFile(e.target.files[0])} />
 
         <input
           type="text"
-          placeholder="Policy (Admin, etc)"
+          placeholder="Policy (e.g., role:admin)"
           className="px-3 py-2 border rounded dark:bg-gray-800"
           value={policy}
           onChange={(e) => setPolicy(e.target.value)}
@@ -97,11 +148,35 @@ export default function DataCatalog() {
 
         <button
           onClick={handleUpload}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded"
         >
           <Upload size={16} />
           Upload
         </button>
+      </div>
+
+      {/* 🔥 Context Inputs (CLI Style) */}
+      <div className="bg-white dark:bg-gray-900 p-4 rounded-xl border mb-6 flex gap-4 flex-wrap">
+        <input
+          placeholder="Location"
+          className="px-3 py-2 border rounded dark:bg-gray-800"
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+        />
+
+        <input
+          placeholder="Device"
+          className="px-3 py-2 border rounded dark:bg-gray-800"
+          value={device}
+          onChange={(e) => setDevice(e.target.value)}
+        />
+
+        <input
+          placeholder="Department"
+          className="px-3 py-2 border rounded dark:bg-gray-800"
+          value={department}
+          onChange={(e) => setDepartment(e.target.value)}
+        />
       </div>
 
       {/* 🔍 Search */}
@@ -121,7 +196,7 @@ export default function DataCatalog() {
         {filtered.map((file, i) => (
           <div
             key={i}
-            className="p-4 rounded-xl bg-white dark:bg-gray-900 border hover:shadow-lg transition"
+            className="p-4 rounded-xl bg-white dark:bg-gray-900 border"
           >
             <div className="text-3xl mb-2">📄</div>
 
@@ -133,12 +208,21 @@ export default function DataCatalog() {
                 {file.type}
               </span>
 
-              <button
-                onClick={() => handleDelete(file.file_id)}
-                className="text-red-500 hover:text-red-700"
-              >
-                <Trash2 size={16} />
-              </button>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => handleDownload(file.file_id, file.name)}
+                  className="text-blue-500"
+                >
+                  <Download size={16} />
+                </button>
+
+                <button
+                  onClick={() => handleDelete(file.file_id)}
+                  className="text-red-500"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
             </div>
           </div>
         ))}
