@@ -32,3 +32,20 @@ class S3Component:
         except ClientError as e:
             print("S3 delete error:", e)
             return False
+    
+    def list_files(self):
+        try:
+            response = self.s3.list_objects_v2(Bucket=self.bucket)
+
+            files = []
+            for obj in response.get("Contents", []):
+                files.append({
+                    "name": obj["Key"],
+                    "url": f"https://{self.bucket}.s3.ap-south-2.amazonaws.com/{obj['Key']}"
+                })
+
+            return files
+
+        except ClientError as e:
+            print("S3 list error:", e)
+            return []

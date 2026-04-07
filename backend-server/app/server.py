@@ -15,8 +15,8 @@ from app.components.file_component import FileComponent
 app = Flask(__name__)
 
 # Configure S3
-S3_BUCKET = "file-storage-00414"
-S3_REGION = "eu-central-1"
+S3_BUCKET = "governance-hub-files-arshin"
+S3_REGION = "ap-south-2"
 
 # Components (now using Waters11)
 crypto = CryptoComponent()
