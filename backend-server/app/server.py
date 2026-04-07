@@ -241,7 +241,7 @@ def get_files():
             "file_id": f.get("file_id")
         })
 
-    return jsonify(result)
+    return jsonify(result), 200
 
 # ---------------- Download ----------------
 @app.route("/download", methods=["POST"])
@@ -333,24 +333,28 @@ def download():
 @app.route("/delete", methods=["POST"])
 def delete_file():
     try:
-        data = request.json
+        data = request.get_json()
         file_id = data.get("file_id")
 
-        fmeta = file_comp.get_file(file_id)
-        if not fmeta:
-            return jsonify({"success": False, "error": "file not found"}), 404
+        if not file_id:
+            return jsonify({"success": False, "error": "Missing file_id"}), 400
 
-        # delete from S3
-        s3_key = fmeta.get("s3_key")
+        file_meta = file_comp.get_file(file_id)
+        if not file_meta:
+            return jsonify({"success": False, "error": "File not found"}), 404
+
+        # Delete from S3
+        s3_key = file_meta.get("s3_key")
         if s3_key:
             s3c.delete_file(s3_key)
 
-        # delete from DB
+        # Delete from DB
         file_comp.delete_file(file_id)
 
         return jsonify({"success": True})
+
     except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
+        return jsonify({"success": False, "error": str(e)}), 500
 
 #ADD THIS CRITICAL CODE TO START THE SERVER
 if __name__ == "__main__":
