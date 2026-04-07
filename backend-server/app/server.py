@@ -228,6 +228,20 @@ def list_files():
 def list_files_alias():
     return list_files()
 
+@app.route("/files", methods=["GET"])
+def get_files():
+    files = file_comp.list_files()
+
+    result = []
+    for f in files:
+        result.append({
+            "name": f["orig_filename"],
+            "owner": f["owner"],
+            "type": f["orig_filename"].split(".")[-1],
+            "file_id": f["file_id"]
+        })
+
+    return jsonify(result)
 # ---------------- Download ----------------
 @app.route("/download", methods=["POST"])
 def download():
