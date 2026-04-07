@@ -4,6 +4,7 @@ import os
 import uuid
 import json
 from web3 import Web3
+from flask_cors import CORS
 
 from app.components.crypto_component import CryptoComponent
 from app.components.s3_component import S3Component
@@ -13,6 +14,7 @@ from app.components.user_component import UserComponent
 from app.components.file_component import FileComponent
 
 app = Flask(__name__)
+CORS(app)
 
 # Configure S3
 S3_BUCKET = "governance-hub-files-arshin"
@@ -140,82 +142,113 @@ def login():
 # ---------------- Upload ----------------
 @app.route("/upload", methods=["POST"])
 def upload():
-    if 'file' not in request.files:
-        return jsonify({"success": False, "error": "file missing"}), 400
-
-    f = request.files['file']
-    username = request.form.get("username") or request.form.get("owner")
-    if not username:
-        return jsonify({"success": False, "error": "missing username/owner"}), 400
-
-    policy = request.form.get("policy")
-    if not policy:
-        return jsonify({"success": False, "error": "policy is required"}), 400
-
-    # Context policy fields
-    context_policy_json = request.form.get("context_policy")
-    allowed_locations = request.form.get("allowed_locations")
-    required_device = request.form.get("required_device")
-    required_department = request.form.get("required_department")
-    time_window_json = request.form.get("time_window")
-
-    fname = f.filename
-    local_path = os.path.join(UPLOAD_TEMP_DIR, f"{uuid.uuid4()}_{fname}")
-    f.save(local_path)
-
-    # Encrypt file with Waters11 CP-ABE
     try:
-        crypto.load_master_keys()
-        meta = crypto.encrypt_file_hybrid(local_path, policy)
-    except Exception as e:
-        print(f"Waters11 encryption failed: {e}")
-        return jsonify({"success": False, "error": f"encryption failed: {str(e)}"}), 500
+        if 'file' not in request.files:
+            return jsonify({"success": False, "error": "file missing"}), 400
 
-    #BACK TO S3 UPLOAD (using real credentials)
-    s3_key = f"enc/{uuid.uuid4()}_{fname}.enc"
-    if not s3c.upload_file(meta["enc_file_path"], s3_key):
-        return jsonify({"success": False, "error": "s3 upload failed"}), 500
+        f = request.files['file']
+        username = request.form.get("username") or request.form.get("owner")
 
-    # Register in database
-    fid = file_comp.register_encrypted_file(username, meta, s3_key=s3_key)
-    log_to_blockchain(username, fid, "UPLOAD", True, f"Policy: {policy}")
+        if not username:
+            return jsonify({"success": False, "error": "missing username"}), 400
 
-    # Handle context policies
-    applied_policy = None
-    if context_policy_json:
+        policy = request.form.get("policy")
+        if not policy:
+            return jsonify({"success": False, "error": "policy required"}), 400
+
+        # Context fields
+        context_policy_json = request.form.get("context_policy")
+        allowed_locations = request.form.get("allowed_locations")
+        required_device = request.form.get("required_device")
+        required_department = request.form.get("required_department")
+        time_window_json = request.form.get("time_window")
+
+        fname = f.filename
+        local_path = os.path.join(UPLOAD_TEMP_DIR, f"{uuid.uuid4()}_{fname}")
+        f.save(local_path)
+
+        # 🔐 Encrypt
         try:
-            cp = json.loads(context_policy_json)
-            applied_policy = cp
-            context_comp.add_policy(fid, cp)
-            file_comp.set_context_policy(fid, cp)
+            crypto.load_master_keys()
+            meta = crypto.encrypt_file_hybrid(local_path, policy)
         except Exception as e:
-            print("Invalid context policy:", e)
+            print("Encryption error:", e)
+            return jsonify({"success": False, "error": str(e)}), 500
 
-    if not applied_policy:
-        cp = {}
-        if allowed_locations:
-            cp["allowed_locations"] = [x.strip() for x in allowed_locations.split(",") if x.strip()]
-        if required_device:
-            cp["allowed_devices"] = [required_device]
-        if time_window_json:
+        # ☁️ Upload to S3
+        s3_key = f"enc/{uuid.uuid4()}_{fname}.enc"
+
+        upload_ok = s3c.upload_file(meta["enc_file_path"], s3_key)
+
+        if not upload_ok:
+            return jsonify({"success": False, "error": "S3 upload failed"}), 500
+
+        print("✅ S3 Upload success:", s3_key)
+
+        # 📦 Register
+        fid = file_comp.register_encrypted_file(username, meta, s3_key=s3_key)
+
+        # 🔗 Blockchain
+        log_to_blockchain(username, fid, "UPLOAD", True, policy)
+
+        # 📍 Context policy
+        applied_policy = None
+
+        if context_policy_json:
             try:
-                tw = json.loads(time_window_json)
-                cp["time_window"] = tw
+                cp = json.loads(context_policy_json)
+                applied_policy = cp
+                context_comp.add_policy(fid, cp)
+                file_comp.set_context_policy(fid, cp)
             except Exception as e:
-                print("Invalid time_window JSON:", e)
+                print("Invalid context_policy_json:", e)
 
-        if cp:
-            context_comp.add_policy(fid, cp)
-            file_comp.set_context_policy(fid, cp)
+        if not applied_policy:
+            cp = {}
 
-    #Clean up local encrypted file after S3 upload
-    try:
-        os.remove(meta["enc_file_path"])
-        os.remove(local_path)  # Also remove original temp file
-    except Exception:
-        pass
+            if allowed_locations:
+                cp["allowed_locations"] = [x.strip() for x in allowed_locations.split(",") if x.strip()]
 
-    return jsonify({"success": True, "file_id": fid, "s3_key": s3_key})
+            if required_device:
+                cp["allowed_devices"] = [required_device]
+
+            if required_department:
+                cp["required_department"] = required_department   # ✅ FIXED
+
+            if time_window_json:
+                try:
+                    cp["time_window"] = json.loads(time_window_json)
+                except Exception as e:
+                    print("Invalid time_window:", e)
+
+            if cp:
+                context_comp.add_policy(fid, cp)
+                file_comp.set_context_policy(fid, cp)
+
+        # 🧹 Cleanup
+        try:
+            if os.path.exists(meta["enc_file_path"]):
+                os.remove(meta["enc_file_path"])
+            if os.path.exists(local_path):
+                os.remove(local_path)
+        except Exception as e:
+            print("Cleanup error:", e)
+
+        return jsonify({
+            "success": True,
+            "file_id": fid,
+            "s3_key": s3_key
+        }), 200
+
+    except Exception as e:
+        print("🔥 UPLOAD CRASH:", e)
+        import traceback
+        traceback.print_exc()
+
+        return jsonify({
+            "success": False,
+            "error": str(e)
+        }), 500
 
 
 # ---------------- List ----------------
