@@ -235,13 +235,14 @@ def get_files():
     result = []
     for f in files:
         result.append({
-            "name": f["orig_filename"],
-            "owner": f["owner"],
-            "type": f["orig_filename"].split(".")[-1],
-            "file_id": f["file_id"]
+            "name": f.get("orig_filename", "unknown"),
+            "owner": f.get("owner", "unknown"),
+            "type": f.get("orig_filename", "").split(".")[-1] if f.get("orig_filename") else "unknown",
+            "file_id": f.get("file_id")
         })
 
     return jsonify(result)
+
 # ---------------- Download ----------------
 @app.route("/download", methods=["POST"])
 def download():
