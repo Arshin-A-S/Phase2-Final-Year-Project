@@ -8,30 +8,28 @@ import AccessControl from "./pages/AccessControl";
 import AuditLogs from "./pages/AuditLogs";
 
 export default function App() {
-  const [darkMode, setDarkMode] = useState(true);
+  const [darkMode, setDarkMode] = useState(false);
 
+  // Apply dark mode class to HTML
   useEffect(() => {
     document.documentElement.classList.toggle("dark", darkMode);
   }, [darkMode]);
 
   return (
-    <div className="flex h-screen transition-all duration-300
-      bg-gradient-to-br 
-      from-gray-50 via-gray-100 to-gray-200 
-      dark:from-gray-950 dark:via-gray-900 dark:to-black
-      text-gray-800 dark:text-gray-200"
-    >
+    <div className="flex h-screen bg-gray-100 dark:bg-gray-950 text-gray-800 dark:text-gray-200">
       <Sidebar />
 
-      <main className="flex-1 p-10">
-        {/* Toggle */}
+      <main className="flex-1 p-8">
+        {/* 🔥 Better Toggle Button */}
         <div className="flex justify-end mb-6">
           <button
             onClick={() => setDarkMode(!darkMode)}
-            className="px-4 py-2 rounded-xl text-sm font-medium 
-            bg-white/70 dark:bg-gray-800/70 
-            backdrop-blur-xl border border-gray-200 dark:border-gray-700
-            hover:scale-105 transition"
+            className="px-4 py-2 rounded-lg text-sm font-medium 
+              bg-gray-900 text-white 
+              hover:bg-gray-700 
+              dark:bg-gray-200 dark:text-black 
+              dark:hover:bg-gray-300 
+              transition"
           >
             {darkMode ? "☀️ Light" : "🌙 Dark"}
           </button>

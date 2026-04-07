@@ -54,3 +54,6 @@ class FileComponent:
         self.db["files"][fid]["context_policy"] = policy
         save_db(self.db)
         return True
+    def delete_file(self, fid):
+        self.db = [f for f in self.db if f["file_id"] != fid]
+        self._save()

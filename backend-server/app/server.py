@@ -328,6 +328,31 @@ def download():
 
     return send_file(dec_path, as_attachment=True, download_name=fmeta["orig_filename"])
 
+# ---------------- Delete ----------------
+@app.route("/delete", methods=["POST"])
+def delete_file():
+    try:
+        data = request.json
+        fid = data.get("file_id")
+
+        fmeta = file_comp.get_file(fid)
+        if not fmeta:
+            return jsonify({"success": False, "error": "file not found"}), 404
+
+        s3_key = fmeta.get("s3_key")
+
+        # Delete from S3
+        if s3_key:
+            s3c.delete_file(s3_key)
+
+        # Delete from DB
+        file_comp.delete_file(fid)
+
+        return jsonify({"success": True})
+
+    except Exception as e:
+        return jsonify({"success": False, "error": str(e)}), 500
+
 #ADD THIS CRITICAL CODE TO START THE SERVER
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5001, debug=True)
