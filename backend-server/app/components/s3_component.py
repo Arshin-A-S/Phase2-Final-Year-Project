@@ -1,12 +1,13 @@
-# backend/components/s3_component.py
 import boto3
-import os
 from botocore.exceptions import ClientError
 
 class S3Component:
     def __init__(self, bucket_name, region_name=None):
         self.bucket = bucket_name
-        session = boto3.session.Session()
+
+        # 🔥 Force use of default AWS profile
+        session = boto3.Session(profile_name="default")
+
         self.s3 = session.client('s3', region_name=region_name)
 
     def upload_file(self, local_path, s3_key):
@@ -32,7 +33,7 @@ class S3Component:
         except ClientError as e:
             print("S3 delete error:", e)
             return False
-    
+
     def list_files(self):
         try:
             response = self.s3.list_objects_v2(Bucket=self.bucket)
