@@ -7,7 +7,7 @@ export default function DataCatalog() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [policy, setPolicy] = useState("");
 
-  // 🔥 Context (merged into upload box)
+  // 🔥 Context
   const [location, setLocation] = useState("");
   const [device, setDevice] = useState("");
   const [department, setDepartment] = useState("");
@@ -18,15 +18,16 @@ export default function DataCatalog() {
   const fetchFiles = async () => {
     try {
       const res = await fetch("http://localhost:5001/files");
-
-      if (!res.ok) {
-        console.error("Fetch failed");
-        return;
-      }
-
       const data = await res.json();
-      setFiles(data || []);
-    } catch {
+
+      if (Array.isArray(data)) {
+        setFiles(data);
+      } else {
+        console.warn("Invalid files response:", data);
+        setFiles([]);
+      }
+    } catch (err) {
+      console.error("Fetch error:", err);
       setFiles([]);
     }
   };
@@ -47,7 +48,6 @@ export default function DataCatalog() {
     formData.append("username", username);
     formData.append("policy", policy);
 
-    // 🔥 SEND CONTEXT TO BACKEND
     if (location) formData.append("allowed_locations", location);
     if (device) formData.append("required_device", device);
     if (department) formData.append("required_department", department);
@@ -58,27 +58,34 @@ export default function DataCatalog() {
         body: formData,
       });
 
-      if (!res.ok) {
-        const err = await res.json();
-        alert(err.error || "Upload failed");
+      const text = await res.text();
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("Invalid JSON:", text);
+        alert("Server error");
         return;
       }
 
-      const data = await res.json();
+      console.log("UPLOAD RESPONSE:", data);
 
-      if (data.success) {
+      if (res.ok && data.success) {
         alert("Uploaded 🚀");
 
-        // Reset
+        // reset inputs
         setSelectedFile(null);
         setPolicy("");
 
         fetchFiles();
       } else {
-        alert(data.error);
+        alert(data.error || "Upload failed");
       }
-    } catch {
-      alert("Upload failed");
+
+    } catch (err) {
+      console.error("Upload error:", err);
+      alert("Network error");
     }
   };
 
@@ -102,7 +109,8 @@ export default function DataCatalog() {
       } else {
         alert(data.error);
       }
-    } catch {
+    } catch (err) {
+      console.error("Delete error:", err);
       alert("Delete failed");
     }
   };
@@ -121,7 +129,7 @@ export default function DataCatalog() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          username: username,
+          username,
           file_id: fileId,
           context: {
             location,
@@ -132,8 +140,13 @@ export default function DataCatalog() {
       });
 
       if (!res.ok) {
-        const err = await res.json();
-        alert(err.error || "Download blocked");
+        const text = await res.text();
+        try {
+          const err = JSON.parse(text);
+          alert(err.error);
+        } catch {
+          alert("Download failed");
+        }
         return;
       }
 
@@ -142,24 +155,29 @@ export default function DataCatalog() {
 
       const a = document.createElement("a");
       a.href = url;
-      a.download = fileName;
+      a.download = fileName || "downloaded_file";
       a.click();
-    } catch {
+
+      window.URL.revokeObjectURL(url); // ✅ cleanup
+
+    } catch (err) {
+      console.error("Download error:", err);
       alert("Download failed");
     }
   };
 
   // ---------------- FILTER ----------------
-  const filtered = files.filter((f) =>
-    (f.name || "").toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = Array.isArray(files)
+    ? files.filter((f) =>
+        (f.name || "").toLowerCase().includes(search.toLowerCase())
+      )
+    : [];
 
-  // ---------------- UI ----------------
   return (
     <div>
       <h1 className="text-3xl font-semibold mb-6">Data Catalog</h1>
 
-      {/* 🔥 COMBINED UPLOAD + CONTEXT BOX */}
+      {/* 🔥 Upload + Context */}
       <div className="bg-white dark:bg-gray-900 p-4 rounded-xl border mb-6 flex flex-wrap gap-4 items-center">
 
         <input
@@ -198,7 +216,8 @@ export default function DataCatalog() {
 
         <button
           onClick={handleUpload}
-          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+          disabled={!selectedFile || !policy}
+          className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded disabled:opacity-50"
         >
           <Upload size={16} />
           Upload
@@ -219,15 +238,17 @@ export default function DataCatalog() {
 
       {/* 📁 Files */}
       <div className="grid grid-cols-4 gap-6">
-        {filtered.map((file) => (
+        {filtered.map((file, i) => (
           <div
-            key={file.file_id}   // ✅ FIXED
+            key={file.file_id || i}
             className="p-4 rounded-xl bg-white dark:bg-gray-900 border hover:shadow-lg transition"
           >
             <div className="text-3xl mb-2">📄</div>
 
             <p className="font-medium">{file.name || "Unknown"}</p>
-            <p className="text-sm text-gray-500">{file.owner || "N/A"}</p>
+            <p className="text-sm text-gray-500">
+              {file.owner || "Unknown"}
+            </p>
 
             <div className="flex justify-between mt-3">
               <span className="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">

@@ -97,6 +97,27 @@
           "laptop1"
         ]
       }
+    },
+    "c2d97ec4-8716-4bb4-a9d5-07111baeb2e3": {
+      "id": "c2d97ec4-8716-4bb4-a9d5-07111baeb2e3",
+      "display_name": "d9e9a138-d391-462c-aa00-b3865deba218_Arshin_A_S_Certificate",
+      "user_friendly_id": "d9e9a138-d391-462c-aa00-b3865deba218_Arshin_A_S_Certificate",
+      "uploader": "alice",
+      "orig_filename": "d9e9a138-d391-462c-aa00-b3865deba218_Arshin A S Certificate.pdf",
+      "enc_file_path": "uploads/d9e9a138-d391-462c-aa00-b3865deba218_Arshin A S Certificate.pdf.enc",
+      "abe_ct": "{\"ct\": {\"c0\": \"ZUp3OVVFc09RakVJdkVyVGRSZjlRNzJLTWMzVHZKMjdweWJHZUhlWmxyb282UUF6REh4czc3ZjdkaHk5MjVPeDEvZGpQNnd6a24xdDkrYytzdWZpblNuc0RCZG5naGRRQ1o4Z0lVUm5jbktHMENLSkpwWGFwRlgrdFFxV1BGZDBSd1RTUUtDQUg0ZkkwcVV5bFRocGliUElMaEI4bVNXQ1lLQy9vRURHVEhpUVJPTTVrOVVQOE9pRUdvbVBNdmhwT2gvMEVJU2JtL2FWdFY2REtrRDB1bUpTdTlUbUZVWVNraGtGNlBQcXdBVjQyV085RmNiampGQnV5bCtXSUE1NlpsMnZGbjNoOHYwQmU1ZFJrdz09\", \"C\": {\"3\": \"ZUp4RlVNdHVBekVJL0JWcnp6N0F4aGpjWDZtaVZWcmxsdHUybGFxcS8xNEdpSG9ad3pBZUhqL2JjYncvYnVkNUhOdEwyOTYrUCs3bjFwdXpYN2ZINXozWTE3RjZFK3VOeWNFOHNkMFRCdEFGMFFKb2J5dEUzSnVHWUtSYXFMY3AvbkpWVFJHRWhMTE01RERjeTZEaFdTQ2pqSm5RVlZLVFNaaHBlUmdhczVSUmZNR01DaU55azdscWV1Wkxqcm1jVWZlUW1YRXF2RGcwQjBTM1VETkZ4QlVOZTJZN0ZUV2RrcWM4MWtFOTFsbDFIaHdFaElERVZ2dWVmZjlYWkhkUkw2dlZjUTNIcWF0aVhZdzQrZnI3Qnd1OFUzOD0=\"}, \"D\": {\"3\": \"ZUp3OWtFc093akFNUks4U1paMUZISkxZNFNvSVJRVjExMTBCQ1NIdWpuOWxnZW9aUEgyZWZ1S2M5MjNaOXpuak9jVGIrN0h1TVFWMlg4djJYTlc5dEp4Q294UWc5eFE2c29BVXNQQ1RaK3J5aHd3MWhVcHVBQTkxbUFtbG1JQmNmUmN5UytURlFTNklkL0FreWVJZ1l0VllkQVg0TUxMOTVDUW9jR1RJWFhRaGcrYUFpWWlHcjhyaU5XcU9nQ3pwekJMQmdOWkVrMkNKVG5ZcFZvTjFmNXZSdFJYWlBRT1BkbnBDUDVxcDgrZExLK0dYbzBWdWJoTXJiRWFRN3lMbE5kakZoT3YzQi9BcVVtRT0=\"}, \"c_m\": \"ZUp4TlVzdHV3ekFNK3hVajV4d3N4N2JrL2Nvd0JOM1FXMi9kQmd6RC9uMm1SQmM5SkhHb0YwbjVkenZQajl2bGZqL1A3U1Z0N3orZjEvdTJwNGwrWDI1ZlYwZGZtK3lwMlo2MDdFbksvQms2ZjlxZSt0aVQxVGpiTVpONmZCRVhtV0REb2FCTVpwbGt3NnZqbFpraFVvaGhpcFNKMThGVXRJNUN0TEFaYXZQYnZNbzd6ZTVqeEVoSFdpRnFzNmdlUWN3QlJiN01YSzFFMmhIOHlRZEVNeXFFaVdqTTRaQ2ZTYTRiRDlIYUlsRnphUFdvY0hCdlpPUVN3Yy8wTWMrNzExQ0RhdkF5aTM4OG9YMDUxMkZzcDU5QUc3ZmdnV2ZLUGdMOGFMR2ZTdlRYd1hsMW1lRXVOaWFQVEVWZEtUaXp3RHZBVDBmQ2JvY3I5ZWhCb3FxckIxUktKd1VNQW5lczFuVWM5Slgzd2dseEtYN1F6bFU4YldjNWo5YkRGcG1GK2gzUkphSHE4cjR4aE5WVWkyc1VWQzE0NjBOT1hLb1ZzcUJqMktTOC9mMERGcUtXQ0E9PQ==\"}, \"random_msg_b64\": \"ZUp4TlVzdHV4REFJL0pVbzV4ekFNVGJ1cjFSVnRLMzJ0cmUwbGFxcS8xNEdjTFNIT05nOFpnYjRYWS9qNDNFN3orTllYNWIxL2VmemZxN2JZcS9mdDhmWDNWOWZoYmRGZEZ1WWFGdWEyTmZ0VXV4VnpSam1hUVBlSFVlZFZpbDJzT0F3U3kyNm9RWmJTc2VsMlI5ZXVnb2liRVJvOVZDREE3WWI4RlNFTVJDWWd3bFRlMFlHSHluaEdwYlV4MHdnczhUQ3VvWVhBR3E1cWhmTFpDaW95QmtxWUVzaEVGUzBKaVlrVk1DeVE3VEE3dEJNSldOUVcwckdJQmp1TnBYcEhycFJHczBBSzZsaEkwdGJCZ0tmQzBVSjU0d0gxcWcxaGRRUi82Zy9tWW1FeDJ1UU53eWtBRit5TmVDZ2UwNEdlcjNsMUorb3huanQxbXV5a0N4QWN3NUl2bDU4TjlvY3JuUEhKUENodTBQVGcyN1drZFBCMkh2TGRmR0ZvTmxhdEtQbmRqZ1hES3ozV0NEcE0wZUNJQXBCdDR1aVRJazVjNmp6MVVnWnp0enozWTNueG05Ly8xOEVreWM9\", \"plaintext\": \"8e13e3b558a1a22b5c37e2cb21f1812e227a47767c034c877f4c3308bde865b6\", \"policy_str\": \"3\"}",
+      "policy": "role:admin",
+      "s3_key": "enc/a5ebcaf1-6cc6-4f59-b7bb-605b0ccabde8_Arshin A S Certificate.pdf.enc",
+      "created": "2026-04-07T20:32:01.724882",
+      "context_policy": {
+        "allowed_locations": [
+          "Chennai"
+        ],
+        "allowed_devices": [
+          "laptop1"
+        ],
+        "required_department": "cs"
+      }
     }
   }
 }
