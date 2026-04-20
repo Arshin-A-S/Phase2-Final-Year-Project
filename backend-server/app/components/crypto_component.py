@@ -74,7 +74,7 @@ class CryptoComponent:
     def _normalize_attributes(self, attributes: list[str]) -> list[str]:
         """Normalize attributes to numeric format for Waters11."""
         attr_map = {
-            'role:prof': '1', 'role:student': '2', 'role:admin': '3',
+            'role:prof': '1', 'role:student': '2', 'role:admin': '3', 'role:user': '4',
             'dept:cs': '10', 'dept:math': '11', 'dept:eng': '12'
         }
         
@@ -101,7 +101,7 @@ class CryptoComponent:
             'role:admin': '3', 'ROLE_ADMIN': '3', 'admin': '3',
             'dept:cs': '10', 'DEPT_CS': '10', 'cs': '10',
             'dept:math': '11', 'DEPT_MATH': '11', 'math': '11',
-            'dept:eng': '12', 'DEPT_ENG': '12', 'eng': '12'
+            'dept:eng': '12', 'DEPT_ENG': '12', 'eng': '12', 'role:user': '4', 'user': '4',  
         }
         
         normalized = policy.strip()
