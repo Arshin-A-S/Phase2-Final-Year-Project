@@ -32,6 +32,14 @@ fl_comp = FLComponent()
 user_comp = UserComponent()
 file_comp = FileComponent()
 
+# 🔥 ADD THIS BLOCK HERE (TEMP FIX)
+try:
+    crypto.load_master_keys()
+except:
+    crypto.setup(force=True)
+    crypto.save_master_keys()
+
+
 UPLOAD_TEMP_DIR = "uploads"
 os.makedirs(UPLOAD_TEMP_DIR, exist_ok=True)
 
@@ -207,13 +215,15 @@ def upload():
             cp = {}
 
             if allowed_locations:
-                cp["allowed_locations"] = [x.strip() for x in allowed_locations.split(",") if x.strip()]
+                cp["allowed_locations"] = [
+                    x.strip().lower() for x in allowed_locations.split(",") if x.strip()
+                ]
 
             if required_device:
-                cp["allowed_devices"] = [required_device]
+                cp["allowed_devices"] = [required_device.strip().lower()]
 
             if required_department:
-                cp["required_department"] = required_department   # ✅ FIXED
+                cp["required_department"] = required_department.strip().lower()
 
             if time_window_json:
                 try:
@@ -313,13 +323,15 @@ def download():
 
     context["location"] = context.get("location", "").strip().lower()
 
-    context["device_id"] = context.get("device_id", context.get("device", "")).strip().lower()
+    device_val = context.get("device_id", context.get("device", "")).strip().lower()
+    context["device"] = device_val
+    context["device_id"] = device_val
 
     context["department"] = context.get("department", "").strip().lower()
+    context["client_id"] = username
 
     # remove duplicate key
 
-    context.pop("device", None)
 
     # keep existing behavior
 

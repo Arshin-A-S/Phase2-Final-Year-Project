@@ -15,32 +15,30 @@ class ContextComponent:
         self.policies[file_id] = policy
 
     def check_access(self, file_id, context):
-        """
-        context: {time: epoch, location: 'india', device_id: 'dev1', department: 'cs'}
-        Returns True if passes, False if violates.
-        Simple rules:
-        - if allowed_locations present -> check membership
-        - if time_range -> check
-        """
         pol = self.policies.get(file_id)
         if not pol:
             return True
 
-        # location
+        location = (context.get("location") or "").strip().lower()
+        device = (context.get("device_id") or "").strip().lower()
+        department = (context.get("department") or "").strip().lower()
+
         if "allowed_locations" in pol:
-            if context.get("location") not in pol["allowed_locations"]:
+            allowed_locations = [x.strip().lower() for x in pol["allowed_locations"]]
+            if location not in allowed_locations:
+                print("❌ Location failed")
                 return False
 
-        # time restrict (start, end) epoch
-        if "time_window" in pol and isinstance(pol["time_window"], (list, tuple)) and len(pol["time_window"]) == 2:
-            start, end = pol["time_window"]
-            t = context.get("time", time.time())
-            if not (start <= t <= end):
-                return False
-
-        # device whitelist
         if "allowed_devices" in pol:
-            if context.get("device_id") not in pol["allowed_devices"]:
+            allowed_devices = [x.strip().lower() for x in pol["allowed_devices"]]
+            if device not in allowed_devices:
+                print("❌ Device failed")
                 return False
 
+        if "required_department" in pol:
+            if department != pol["required_department"].strip().lower():
+                print("❌ Department failed")
+                return False
+
+        print("✅ Context access granted")
         return True
