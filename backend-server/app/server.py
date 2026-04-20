@@ -266,12 +266,19 @@ def get_files():
     files = file_comp.list_files()
 
     result = []
+
     for f in files:
+        fid = f.get("id")   # ✅ correct key
+
+        if not fid:
+            print("⚠️ Missing ID:", f)
+            continue
+
         result.append({
             "name": f.get("orig_filename", "unknown"),
-            "owner": f.get("owner", "unknown"),
+            "owner": f.get("uploader", "unknown"),   # ✅ FIXED
             "type": f.get("orig_filename", "").split(".")[-1] if f.get("orig_filename") else "unknown",
-            "file_id": f.get("file_id")
+            "file_id": fid   # ✅ FIXED
         })
 
     return jsonify(result), 200
@@ -368,7 +375,7 @@ def delete_file():
     try:
         data = request.get_json()
         file_id = data.get("file_id")
-
+        print("DELETE REQUEST:", data)
         if not file_id:
             return jsonify({"success": False, "error": "Missing file_id"}), 400
 

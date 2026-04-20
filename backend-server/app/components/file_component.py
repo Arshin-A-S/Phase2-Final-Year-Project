@@ -36,9 +36,11 @@ class FileComponent:
         return fid
 
     def get_file(self, fid):
+        self.db = load_db()
         return self.db["files"].get(fid)
 
     def list_files(self):
+        self.db = load_db()
         return list(self.db["files"].values())
 
     def set_s3_key(self, fid, s3_key):
@@ -55,6 +57,14 @@ class FileComponent:
         save_db(self.db)
         return True
     def delete_file(self, file_id):
-        data = self._load_db()
-        data = [f for f in data if f["file_id"] != file_id]
-        self._save_db(data)
+        if file_id not in self.db["files"]:
+            print("❌ File not found:", file_id)
+            return False
+
+        print("🗑️ Deleting:", file_id)
+
+        del self.db["files"][file_id]
+
+        save_db(self.db)
+
+        return True

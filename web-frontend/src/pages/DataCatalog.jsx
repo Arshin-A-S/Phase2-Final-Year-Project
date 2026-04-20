@@ -91,6 +91,11 @@ export default function DataCatalog() {
 
   // ---------------- DELETE ----------------
   const handleDelete = async (fileId) => {
+    if (!fileId) {
+      alert("Invalid file_id");
+      return;
+    }
+
     if (!window.confirm("Delete this file?")) return;
 
     try {
@@ -102,15 +107,27 @@ export default function DataCatalog() {
         body: JSON.stringify({ file_id: fileId }),
       });
 
-      const data = await res.json();
+      const text = await res.text();
+
+      let data;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        console.error("Invalid JSON:", text);
+        alert("Server error");
+        return;
+      }
+
+      console.log("DELETE RESPONSE:", data);
 
       if (data.success) {
         fetchFiles();
       } else {
-        alert(data.error);
+        alert(data.error || "Delete failed");
       }
+
     } catch (err) {
-      console.error("Delete error:", err);
+      console.error(err);
       alert("Delete failed");
     }
   };
@@ -264,7 +281,12 @@ export default function DataCatalog() {
                 </button>
 
                 <button
-                  onClick={() => handleDelete(file.file_id)}
+                  onClick={() => {if (!file.file_id) {
+                    alert("Missing file_id");
+                    console.error("FILE OBJECT:", file);
+                    return;
+                  }
+                  handleDelete(file.file_id);}}
                   className="text-red-500 hover:text-red-700"
                 >
                   <Trash2 size={16} />
