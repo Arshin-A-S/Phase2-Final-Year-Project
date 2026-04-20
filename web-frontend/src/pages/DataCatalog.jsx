@@ -149,10 +149,10 @@ export default function DataCatalog() {
           username,
           file_id: fileId,
           context: {
-            location: loc,
-            device: dev,
-            department: dept,
-          },
+            location: loc.toLowerCase(),
+            device: dev.toLowerCase(),
+            department: dept.toLowerCase(),
+          }
         }),
       });
 
