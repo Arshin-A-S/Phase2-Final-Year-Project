@@ -39,6 +39,9 @@ except:
     crypto.setup(force=True)
     crypto.save_master_keys()
 
+# print("⚡ Regenerating user key for alice (FIX)")
+# new_sk = crypto.generate_user_secret(["role:prof", "dept:cs"])
+# user_comp.set_user_abe_sk("alice", new_sk)
 
 UPLOAD_TEMP_DIR = "uploads"
 os.makedirs(UPLOAD_TEMP_DIR, exist_ok=True)
