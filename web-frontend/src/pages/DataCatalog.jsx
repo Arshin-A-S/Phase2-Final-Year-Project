@@ -7,12 +7,19 @@ export default function DataCatalog() {
   const [selectedFile, setSelectedFile] = useState(null);
   const [policy, setPolicy] = useState("");
 
-  // 🔥 Context
+  // 🔥 Upload Context
   const [location, setLocation] = useState("");
   const [device, setDevice] = useState("");
   const [department, setDepartment] = useState("");
 
   const [username] = useState("alice");
+
+  // 🔽 Download Modal State
+  const [showDownloadModal, setShowDownloadModal] = useState(false);
+  const [selectedFileForDownload, setSelectedFileForDownload] = useState(null);
+  const [downloadLocation, setDownloadLocation] = useState("");
+  const [downloadDevice, setDownloadDevice] = useState("");
+  const [downloadDepartment, setDownloadDepartment] = useState("");
 
   // ---------------- FETCH FILES ----------------
   const fetchFiles = async () => {
@@ -69,15 +76,10 @@ export default function DataCatalog() {
         return;
       }
 
-      console.log("UPLOAD RESPONSE:", data);
-
       if (res.ok && data.success) {
         alert("Uploaded 🚀");
-
-        // reset inputs
         setSelectedFile(null);
         setPolicy("");
-
         fetchFiles();
       } else {
         alert(data.error || "Upload failed");
@@ -118,8 +120,6 @@ export default function DataCatalog() {
         return;
       }
 
-      console.log("DELETE RESPONSE:", data);
-
       if (data.success) {
         fetchFiles();
       } else {
@@ -132,9 +132,9 @@ export default function DataCatalog() {
     }
   };
 
-  // ---------------- DOWNLOAD ----------------
-  const handleDownload = async (fileId, fileName) => {
-    if (!location || !device || !department) {
+  // ---------------- DOWNLOAD (FIXED) ----------------
+  const handleDownload = async (fileId, fileName, loc, dev, dept) => {
+    if (!loc || !dev || !dept) {
       alert("Enter location, device, and department");
       return;
     }
@@ -149,9 +149,9 @@ export default function DataCatalog() {
           username,
           file_id: fileId,
           context: {
-            location,
-            device,
-            department,
+            location: loc,
+            device: dev,
+            department: dept,
           },
         }),
       });
@@ -175,7 +175,12 @@ export default function DataCatalog() {
       a.download = fileName || "downloaded_file";
       a.click();
 
-      window.URL.revokeObjectURL(url); // ✅ cleanup
+      window.URL.revokeObjectURL(url);
+
+      // ✅ reset modal fields
+      setDownloadLocation("");
+      setDownloadDevice("");
+      setDownloadDepartment("");
 
     } catch (err) {
       console.error("Download error:", err);
@@ -197,10 +202,7 @@ export default function DataCatalog() {
       {/* 🔥 Upload + Context */}
       <div className="bg-white dark:bg-gray-900 p-4 rounded-xl border mb-6 flex flex-wrap gap-4 items-center">
 
-        <input
-          type="file"
-          onChange={(e) => setSelectedFile(e.target.files[0])}
-        />
+        <input type="file" onChange={(e) => setSelectedFile(e.target.files[0])} />
 
         <input
           type="text"
@@ -256,16 +258,11 @@ export default function DataCatalog() {
       {/* 📁 Files */}
       <div className="grid grid-cols-4 gap-6">
         {filtered.map((file, i) => (
-          <div
-            key={file.file_id || i}
-            className="p-4 rounded-xl bg-white dark:bg-gray-900 border hover:shadow-lg transition"
-          >
+          <div key={file.file_id || i} className="p-4 rounded-xl bg-white dark:bg-gray-900 border">
             <div className="text-3xl mb-2">📄</div>
 
             <p className="font-medium">{file.name || "Unknown"}</p>
-            <p className="text-sm text-gray-500">
-              {file.owner || "Unknown"}
-            </p>
+            <p className="text-sm text-gray-500">{file.owner || "Unknown"}</p>
 
             <div className="flex justify-between mt-3">
               <span className="text-xs bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">
@@ -274,20 +271,18 @@ export default function DataCatalog() {
 
               <div className="flex gap-3">
                 <button
-                  onClick={() => handleDownload(file.file_id, file.name)}
-                  className="text-blue-500 hover:text-blue-700"
+                  onClick={() => {
+                    setSelectedFileForDownload(file);
+                    setShowDownloadModal(true);
+                  }}
+                  className="text-blue-500"
                 >
                   <Download size={16} />
                 </button>
 
                 <button
-                  onClick={() => {if (!file.file_id) {
-                    alert("Missing file_id");
-                    console.error("FILE OBJECT:", file);
-                    return;
-                  }
-                  handleDelete(file.file_id);}}
-                  className="text-red-500 hover:text-red-700"
+                  onClick={() => handleDelete(file.file_id)}
+                  className="text-red-500"
                 >
                   <Trash2 size={16} />
                 </button>
@@ -296,6 +291,63 @@ export default function DataCatalog() {
           </div>
         ))}
       </div>
+
+      {/* 🔽 DOWNLOAD MODAL (FIXED) */}
+      {showDownloadModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50">
+          <div className="bg-white dark:bg-gray-900 p-6 rounded-xl w-80 space-y-4">
+
+            <h2 className="text-lg font-semibold">Enter Access Context</h2>
+
+            <input
+              placeholder="Location"
+              className="w-full px-3 py-2 border rounded dark:bg-gray-800"
+              value={downloadLocation}
+              onChange={(e) => setDownloadLocation(e.target.value)}
+            />
+
+            <input
+              placeholder="Device"
+              className="w-full px-3 py-2 border rounded dark:bg-gray-800"
+              value={downloadDevice}
+              onChange={(e) => setDownloadDevice(e.target.value)}
+            />
+
+            <input
+              placeholder="Department"
+              className="w-full px-3 py-2 border rounded dark:bg-gray-800"
+              value={downloadDepartment}
+              onChange={(e) => setDownloadDepartment(e.target.value)}
+            />
+
+            <div className="flex justify-between">
+              <button
+                onClick={() => {
+                  handleDownload(
+                    selectedFileForDownload.file_id,
+                    selectedFileForDownload.name,
+                    downloadLocation,
+                    downloadDevice,
+                    downloadDepartment
+                  );
+                  setShowDownloadModal(false);
+                }}
+                className="px-4 py-2 bg-blue-600 text-white rounded"
+              >
+                Download
+              </button>
+
+              <button
+                onClick={() => setShowDownloadModal(false)}
+                className="px-4 py-2 bg-gray-400 text-white rounded"
+              >
+                Cancel
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </div>
   );
 }
